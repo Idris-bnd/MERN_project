@@ -1,5 +1,6 @@
 const UserModel = require('../models/user.model');
 const jwt = require('jsonwebtoken');
+const { SignUpErrors } = require('../utils/errors.utils');
 
 module.exports.signUp = async (req, res) => {
     // recup des données déstrucutrée via le body
@@ -9,7 +10,8 @@ module.exports.signUp = async (req, res) => {
         const user = await UserModel.create({ pseudo, email, password });
         res.status(201).json({ user: user._id });
     } catch (err) {
-        res.status(200).json(err);
+        const errors = SignUpErrors(err);
+        res.status(200).json({ errors });
     }
 };
 
