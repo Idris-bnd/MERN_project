@@ -2,7 +2,7 @@ module.exports.SignUpErrors = (err) => {
     const errors = { pseudo: '', email: '', password: '' };
 
     if (err.message.includes('pseudo'))
-        errors.pseudo = "Pseudo incorrect ou déjà mis";
+        errors.pseudo = "Pseudo incorrect";
 
     if (err.message.includes('email'))
         errors.email = "Email incorrect";
@@ -11,10 +11,22 @@ module.exports.SignUpErrors = (err) => {
         errors.password = "Le mot de passe incorrect doit faire au moins 6 caractères";
 
     if (err.message.includes('pseudo') && err.code == 11000)
-        errors.pseudo = "Ce pseudo est déjà enregistré";
+        errors.pseudo = "Ce pseudo est déjà utilisé";
 
     if (err.message.includes('email') && err.code == 11000)
         errors.email = "Cet email est déjà enregistré";
+
+    return errors;
+}
+module.exports.SignInErrors = (err) => {
+    const errors = { email: '', password: '' };
+
+
+    if (err.message.includes('email'))
+        errors.email = "Email inconnu";
+
+    if (err.message.includes('password'))
+        errors.password = "Le mot de passe ne correspond pas";
 
     return errors;
 }
