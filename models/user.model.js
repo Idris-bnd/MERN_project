@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "./uploads/profil/random-user.png"
     },
-    bio :{
+    bio: {
       type: String,
       max: 1024,
     },
@@ -50,13 +50,13 @@ const userSchema = new mongoose.Schema(
 );
 
 // play function before save into display: 'block',
-userSchema.pre("save", async function(next) {
+userSchema.pre("save", async function (next) {
   const salt = await bcrypt.genSalt();
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
-userSchema.statics.login = async function(email, password) {
+userSchema.statics.login = async function (email, password) {
   const user = await this.findOne({ email });
   if (user) {
     const auth = await bcrypt.compare(password, user.password);
@@ -65,7 +65,7 @@ userSchema.statics.login = async function(email, password) {
     }
     throw Error('incorrect password');
   }
-  throw Error('incorrect email')
+  throw Error('incorrect email');
 };
 
 const UserModel = mongoose.model("user", userSchema);
