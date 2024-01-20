@@ -4,7 +4,7 @@ const ObjectID = require('mongoose').Types.ObjectId;
 
 module.exports.readPost = async (req, res) => {
     try {
-        const posts = await PostModel.find({});
+        const posts = await PostModel.find({}).sort({ createdAt: -1 });
         res.status(200).json(posts);
     } catch (error) {
         res.status(400).json({ error });
@@ -46,8 +46,8 @@ module.exports.updatePost = async (req, res) => {
             { $set: updatedRecord },
             { new: true }
         );
-        res.status(200).json(updatedPost);
-
+        if (updatedPost) res.status(200).json(updatedPost);
+        else return res.status(400).json({ message: 'Post unknown' });
     } catch (error) {
         return res.status(400).json({ error });
     }
@@ -67,5 +67,131 @@ module.exports.deletePost = async (req, res) => {
         }
     } catch (err) {
         res.status(400).json({ message: "Id unknown: " + id });
+    }
+}
+module.exports.likePost = async (req, res) => {
+    const id = req.params.id;
+    const likerId = req.body.likerId;
+    if (!ObjectID.isValid(id)) return res.status(400).json({ message: "Id unknown: " + id });
+    if (!ObjectID.isValid(likerId)) return res.status(400).json({ message: "Id unknown: " + likerId });
+
+    try {
+        const updatedPost = await PostModel.findByIdAndUpdate(
+            id,
+            { $addToSet: { likers: likerId } },
+            { new: true, upsert: true, setDefaultsOnInsert: true }
+        );
+
+        const user = await UserModel.findByIdAndUpdate(
+            likerId,
+            { $addToSet: { likes: id } },
+            { new: true, upsert: true, setDefaultsOnInsert: true }
+        );
+
+        if (updatedPost && user) res.status(200).json({ updatedPost, user });
+        else return res.status(400).json({ message: 'Post or User unknown' });
+
+    } catch (error) {
+        return res.status(400).json({ error });
+    }
+}
+module.exports.unlikePost = async (req, res) => {
+    const id = req.params.id;
+    const likerId = req.body.likerId;
+    if (!ObjectID.isValid(id)) return res.status(400).json({ message: "Id unknown: " + id });
+    if (!ObjectID.isValid(likerId)) return res.status(400).json({ message: "Id unknown: " + likerId });
+
+    try {
+        const updatedPost = await PostModel.findByIdAndUpdate(
+            id,
+            { $pull: { likers: likerId } },
+            { new: true, upsert: true, setDefaultsOnInsert: true }
+        );
+
+        const user = await UserModel.findByIdAndUpdate(
+            likerId,
+            { $pull: { likes: id } },
+            { new: true, upsert: true, setDefaultsOnInsert: true }
+        );
+
+        if (updatedPost && user) res.status(200).json({ updatedPost, user });
+        else return res.status(400).json({ message: 'Post or User unknown' });
+    } catch (error) {
+        return res.status(400).json({ error });
+    }
+}
+
+
+module.exports.commentPost = async (req, res) => {
+    const id = req.params.id;
+    const { commenterId, commenterPseudo, text } = req.body
+    if (!ObjectID.isValid(id)) return res.status(400).json({ message: "Post Id unknown: " + id });
+    if (!ObjectID.isValid(commenterId)) return res.status(400).json({ message: "Commenter Id unknown: " + commenterId });
+
+    try {
+        const updatedPost = await PostModel.findByIdAndUpdate(
+            id,
+            {
+                $push: {
+                    comments: {
+                        commenterId,
+                        commenterPseudo,
+                        text,
+                        timestamp: new Date().getTime(),
+                    }
+                }
+            },
+            { new: true, upsert: true, setDefaultsOnInsert: true }
+        );
+
+        if (updatedPost) res.status(200).json(updatedPost);
+        else return res.status(400).json({ message: 'Post unknown' });
+    } catch (error) {
+        return res.status(400).json({ error });
+    }
+}
+module.exports.editCommentPost = async (req, res) => {
+    const id = req.params.id;
+    const { commentId, text } = req.body
+    if (!ObjectID.isValid(id)) return res.status(400).json({ message: "Post Id unknown: " + id });
+    if (!ObjectID.isValid(commentId)) return res.status(400).json({ message: "Comment Id unknown: " + commentId });
+
+    try {
+        const post = await PostModel.findById(id);
+        if (!post) res.status(400).json({ message: 'Post unknown' });
+
+        const theComment = post.comments.find((comment) => comment._id.equals(commentId));
+        if (!theComment) res.status(404).json({ message: 'Comment not found' });
+        theComment.text = text;
+
+        const save = await post.save();
+        return res.status(200).json({ save });
+
+    } catch (error) {
+        return res.status(400).json({ error });
+    }
+}
+module.exports.deleteCommentPost = async (req, res) => {
+    const id = req.params.id;
+    const { commentId } = req.body
+    if (!ObjectID.isValid(id)) return res.status(400).json({ message: "Post Id unknown: " + id });
+    if (!ObjectID.isValid(commentId)) return res.status(400).json({ message: "Comment Id unknown: " + commentId });
+
+    try {
+        const post = await PostModel.findByIdAndUpdate(
+            id,
+            {
+                $pull: {
+                    comments: {
+                        _id: commentId
+                    }
+                }
+            },
+            { new: true }
+        );
+        if (!post) res.status(400).json({ message: 'Post unknown' });
+        return res.status(200).json(post);
+    } catch (error) {
+        return res.status(400).json({ error });
     }
 }
