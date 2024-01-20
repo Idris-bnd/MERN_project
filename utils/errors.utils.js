@@ -30,3 +30,11 @@ module.exports.SignInErrors = (err) => {
 
     return errors;
 }
+module.exports.UploadErrors = (err, file) => {
+    const errors = { format: '', maxSize: '', err: err.message, file:file };
+
+    if (err.message.includes('invalid file')) errors.format = 'Format incompatible';
+    if (err.message.includes('max size')) errors.maxSize = 'Le fichier dépasse 500ko';
+
+    return errors;
+}
