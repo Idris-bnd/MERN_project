@@ -32,7 +32,25 @@ module.exports.createPost = async (req, res) => {
     }
 }
 module.exports.updatePost = async (req, res) => {
+    const id = req.params.id;
+    // const posterId = req.body.posterId;
+    if (!ObjectID.isValid(id)) return res.status(400).json({ message: "Id unknown: " + id });
+    // if (!ObjectID.isValid(posterId)) return res.status(400).json({ message: "Id unknown: " + posterId });
 
+    const updatedRecord = {
+        message: req.body.message
+    }
+    try {
+        const updatedPost = await PostModel.findByIdAndUpdate(
+            id,
+            { $set: updatedRecord },
+            { new: true }
+        );
+        res.status(200).json(updatedPost);
+
+    } catch (error) {
+        return res.status(400).json({ error });
+    }
 }
 module.exports.deletePost = async (req, res) => {
     const id = req.params.id;
