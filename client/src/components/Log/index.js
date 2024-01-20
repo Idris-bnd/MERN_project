@@ -21,8 +21,8 @@ function Log(props) {
     <div className="connection-form">
       <div className="form-container">
         <ul>
-          <li id='login' onClick={handleModals} className={signInModal && 'active-btn'}>Se connecter</li>
-          <li id='register' onClick={handleModals} className={signUpModal && 'active-btn'}>S'inscrire</li>
+          <li id='register' onClick={handleModals} className={signUpModal ? 'active-btn' : ''}>S'inscrire</li>
+          <li id='login' onClick={handleModals} className={signInModal ? 'active-btn' : ''}>Se connecter</li>
         </ul>
         {signUpModal && <SignUpForm />}
         {signInModal && <SignInForm />}
