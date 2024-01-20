@@ -1,6 +1,11 @@
 const PostModel = require('../models/post.model');
 const UserModel = require('../models/user.model');
+const { UploadErrors } = require('../utils/errors.utils');
 const ObjectID = require('mongoose').Types.ObjectId;
+
+const fs = require('fs');
+const { promisify } = require('util');
+const pipeline = promisify(require('stream').pipeline);
 
 module.exports.readPost = async (req, res) => {
     try {
@@ -16,9 +21,34 @@ module.exports.createPost = async (req, res) => {
         return res.status(400).json({ message: "Id unknown: " + posterId })
     }
 
+    let fileName;
+    const { file } = req;
+    if (file !== null) {
+        try {
+            if (
+                file.detectedMimeType != "image/jpg" &&
+                file.detectedMimeType != "image/png" &&
+                file.detectedMimeType != "image/jpeg"
+            ) throw Error('invalid file');
+
+            if (file.size > 500000) throw Error('max size');
+        } catch (err) {
+            const errors = UploadErrors(err, file);
+            return res.status(400).json({ errors });
+        }
+
+        fileName = posterId + Date.now() + '.jpg';
+        await pipeline(
+            file.stream,
+            fs.createWriteStream(`${__dirname}/../client/public/uploads/posts/${fileName}`)
+        );
+    }
+
+
     const newPost = await PostModel.create({
         posterId,
         message,
+        picture: fileName !== null ? `./uploads/posts/${fileName}` : '',
         video,
         likers: [],
         comments: []
