@@ -1,28 +1,27 @@
 import React, { useContext } from 'react';
 import Log from '../components/Log';
 import { UidContext } from '../components/AppContext';
+import UpdateProfil from '../components/Profil/UpdateProfil';
 
 function Profil() {
   const uid = useContext(UidContext);
 
-  return(
+  return (
     <div className="profil-page">
-      <div className="log-container">
-        {!uid ? (
-          <>
-            <Log signin={false} signup={true} />
-            <div className="img-container">
-              <img src="./img/log.svg" alt="img log" />
-            </div>
-          </>
-        ) : (
-          <>
-            <h1>Hello darling {uid}</h1>
-          </>
-        )}
-        
-      </div>
+      {uid ? (
+        <>
+          <UpdateProfil />
+        </>
+      ) : (
+        <div className="log-container">
+          <Log signin={false} signup={true} />
+          <div className="img-container">
+            <img src="./img/log.svg" alt="img log" />
+          </div>
+        </div>
+      )}
+
     </div>
- )
+  )
 }
 export default Profil;
