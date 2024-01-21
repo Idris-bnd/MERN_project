@@ -43,6 +43,7 @@ function LikeButton({ post }) {
             {uid && liked === true && (
                 <img src="./img/icons/heart-filled.svg" alt="unlike" onClick={unlike} />
             )}
+            <span>{post.likers.length}</span>
         </div>
     )
 }
