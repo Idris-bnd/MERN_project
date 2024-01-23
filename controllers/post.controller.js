@@ -23,7 +23,7 @@ module.exports.createPost = async (req, res) => {
 
     let fileName;
     const { file } = req;
-    if (file !== null) {
+    if (file) {
         try {
             if (
                 file.detectedMimeType != "image/jpg" &&
@@ -48,7 +48,7 @@ module.exports.createPost = async (req, res) => {
     const newPost = await PostModel.create({
         posterId,
         message,
-        picture: fileName !== null ? `./uploads/posts/${fileName}` : '',
+        picture: fileName ? `./uploads/posts/${fileName}` : '',
         video,
         likers: [],
         comments: []

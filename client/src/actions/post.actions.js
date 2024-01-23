@@ -1,5 +1,7 @@
 import axios from "axios";
 
+export const GET_POST_ERRORS = 'GET_POST_ERRORS';
+
 // posts
 export const GET_POSTS = "GET_POSTS";
 export function getPosts(num) {
@@ -11,6 +13,28 @@ export function getPosts(num) {
                 dispatch({ type: GET_POSTS, payload: array });
             })
             .catch((err) => console.log(err));
+    };
+};
+
+export const ADD_POST = "ADD_POST";
+export function addPost(data) {
+    return (dispatch) => {
+        return axios
+            .post(`${process.env.REACT_APP_API_URL}api/post`, data)
+            .then((res) => {
+                if (res.data.errors) {
+                    dispatch({ type: GET_POST_ERRORS, payload: res.data.errors });
+                } else {
+                    dispatch({ type: GET_POST_ERRORS, payload: [] });
+                }
+            })
+            .catch((err) => {
+                if (err.response.data.errors) {
+                    dispatch({ type: GET_POST_ERRORS, payload: err.response.data.errors });
+                } else {
+                    dispatch({ type: GET_POST_ERRORS, payload: [] });
+                }
+            })
     };
 };
 

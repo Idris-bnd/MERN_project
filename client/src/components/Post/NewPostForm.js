@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { isEmpty, timestampParser } from '../Utils';
+import { addPost, getPosts } from '../../actions/post.actions';
 
 
 
@@ -12,12 +13,34 @@ function NewPostForm() {
     const [video, setVideo] = useState('');
     const [file, setFile] = useState();
     const userData = useSelector((state) => state.userReducer);
+    const error = useSelector((state) => state.errorReducer.postErrors);
+    const dispatch = useDispatch();
 
-    const handlePicture = (e) => {
+    const handlePost = async (e) => {
+        if (message || postPicture || video) {
+            const data = new FormData();
+            data.append('posterId', userData._id);
+            data.append('message', message);
+            console.log(file);
+            if (file != undefined) data.append('file', file);
+            data.append('video', video);
+            console.log(data);
 
+            await dispatch(addPost(data))
+                .then((res) => {
+                    dispatch(getPosts());
+                    cancelPost();
+                });
+
+        } else {
+            alert('Veuillez entrer un message');
+        }
     }
-    const handlePost = (e) => {
-
+    const handlePicture = (e) => {
+        const fileURL = URL.createObjectURL(e.target.files[0]);
+        setPostPicture(fileURL);
+        setFile(e.target.files[0]);
+        setVideo('');
     }
     const handleVideo = (e) => {
         let findLink = message.split(' ');
@@ -110,6 +133,8 @@ function NewPostForm() {
                                     <button onClick={() => setVideo('')}>Supprimer video</button>
                                 )}
                             </div>
+                            {!isEmpty(error.format) && <p>{error.format}</p>}
+                            {!isEmpty(error.maxSize) && <p>{error.maxSize}</p>}
                             <div className="btn-send">
                                 {message || postPicture || video.length > 20 ? (
                                     <button className="cancel" onClick={cancelPost}>Annuler message</button>
