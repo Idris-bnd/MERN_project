@@ -45,7 +45,6 @@ function NewPostForm() {
     const handleVideo = (e) => {
         let findLink = message.split(' ');
         findLink.forEach((mot, index) => {
-            console.log(index);
             if (mot.includes('https://www.youtube') || mot.includes('https://youtube')) {
                 let embed = mot.replace('watch?v=', 'embed/');
                 setVideo(embed.split('&')[0]);
